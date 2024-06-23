@@ -83,16 +83,16 @@ const ToDoList = () => {
   }
 
   async function deleteTaksTodo(id) {
-    const response = await fetch(`${API_URL}/users/${USER_TODO}/todos/${id}`, {
+    const response = await fetch(`${API_URL}/todos/${id}`, {
       method: "DELETE",
       headers: {
         accept: "application/json",
         "Content-type": "application/json",
       },
     }).catch((error) => {
-      console.error("Error:", error);
+      console.error("Error realizando la petición:", error);
     });
-    if (response.ok) {
+    if (response && response.ok) {
       setTodos(todos.filter((t) => t.id !== id));
       getTasks();
     }
