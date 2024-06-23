@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Icono from "./Icono";
 
-const ToDoList = () => {
+const TodoList = () => {
   const [inputValue, setInputValue] = useState("");
   const [todos, setTodos] = useState([]);
   const API_URL = "https://playground.4geeks.com/todo";
@@ -139,4 +139,4 @@ const ToDoList = () => {
   );
 };
 
-export default ToDoList;
+export default TodoList;
