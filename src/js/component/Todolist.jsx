@@ -5,14 +5,13 @@ const ToDoList = () => {
   const [inputValue, setInputValue] = useState("");
   const [todos, setTodos] = useState([]);
   const API_URL = "https://playground.4geeks.com/todo";
-  const USER_TODO = "nunezweb"
-  
+  const USER_TODO = "nunezweb";
 
   useEffect(() => {
     (async () => {
       const response = await fetch(`${API_URL}/users/${USER_TODO}`);
       if (response.status === 404) {
-        console.log("Usuario no existe, procedemos a crearlo")
+        console.log("Usuario no existe, procedemos a crearlo");
         await createUser();
       }
       await getTasks();
@@ -20,7 +19,6 @@ const ToDoList = () => {
       console.error("Error:", error);
     });
   }, []);
-  
 
   async function createUser() {
     const response = await fetch(`${API_URL}/users/${USER_TODO}`, {
@@ -39,29 +37,24 @@ const ToDoList = () => {
   }
 
   async function getTasks() {
-    const response = await fetch(
-      `${API_URL}/users/${USER_TODO}`
-    );
+    const response = await fetch(`${API_URL}/users/${USER_TODO}`);
     const data = await response.json();
     setTodos(data.todos);
   }
-  
+
   async function addTodo(e) {
     if (e.key === "Enter" && inputValue.trim() !== "") {
-      const response = await fetch(
-        `${API_URL}/todos/${USER_TODO}`,
-        {
-          method: "POST",
-          headers: {
-            accept: "application/json",
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            label: inputValue,
-            is_done: false,
-          })
-        }
-      ).catch((error) => {
+      const response = await fetch(`${API_URL}/todos/${USER_TODO}`, {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          label: inputValue,
+          is_done: false,
+        }),
+      }).catch((error) => {
         console.error("Error:", error);
       });
       const data = await response.json();
@@ -90,16 +83,13 @@ const ToDoList = () => {
   }
 
   async function deleteTaksTodo(id) {
-    const response = await fetch(
-      `${API_URL}/users/${USER_TODO}/todos/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          accept: "application/json",
-          "Content-type": "application/json",
-        },
-      }
-    ).catch((error) => {
+    const response = await fetch(`${API_URL}/users/${USER_TODO}/todos/${id}`, {
+      method: "DELETE",
+      headers: {
+        accept: "application/json",
+        "Content-type": "application/json",
+      },
+    }).catch((error) => {
       console.error("Error:", error);
     });
     if (response.ok) {
