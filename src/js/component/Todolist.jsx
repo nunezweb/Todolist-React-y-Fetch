@@ -9,92 +9,110 @@ const ToDoList = () => {
 
   useEffect(() => {
     (async () => {
-      const response = await fetch(`${API_URL}/users/${USER_TODO}`);
-      if (response.status === 404) {
-        console.log("Usuario no existe, procedemos a crearlo");
-        await createUser();
+      try {
+        const response = await fetch(`${API_URL}/users/${USER_TODO}`);
+        if (response.status === 404) {
+          console.log("Usuario no existe, procedemos a crearlo");
+          await createUser();
+        }
+        await getTasks();
+      } catch (error) {
+        console.error("Error:", error);
       }
-      await getTasks();
-    })().catch((error) => {
-      console.error("Error:", error);
-    });
+    })();
   }, []);
 
   async function createUser() {
-    const response = await fetch(`${API_URL}/users/${USER_TODO}`, {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        name: USER_TODO,
-      }),
-    });
-    if (response.status !== 201) {
-      console.error("Error:", response.status, response.statusText);
-    }
-  }
-
-  async function getTasks() {
-    const response = await fetch(`${API_URL}/users/${USER_TODO}`);
-    const data = await response.json();
-    setTodos(data.todos);
-  }
-
-  async function addTodo(e) {
-    if (e.key === "Enter" && inputValue.trim() !== "") {
-      const response = await fetch(`${API_URL}/todos/${USER_TODO}`, {
+    try {
+      const response = await fetch(`${API_URL}/users/${USER_TODO}`, {
         method: "POST",
         headers: {
           accept: "application/json",
           "Content-type": "application/json",
         },
         body: JSON.stringify({
-          label: inputValue,
-          is_done: false,
+          name: USER_TODO,
         }),
-      }).catch((error) => {
-        console.error("Error:", error);
       });
+      if (response.status !== 201) {
+        console.error("Error:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  async function getTasks() {
+    try {
+      const response = await fetch(`${API_URL}/users/${USER_TODO}`);
       const data = await response.json();
-      if (response.ok) {
-        setInputValue("");
-        getTasks();
+      setTodos(data.todos);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  async function addTodo(e) {
+    if (e.key === "Enter" && inputValue.trim() !== "") {
+      try {
+        const response = await fetch(`${API_URL}/todos/${USER_TODO}`, {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            label: inputValue,
+            is_done: false,
+          }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setInputValue("");
+          getTasks();
+        }
+      } catch (error) {
+        console.error("Error:", error);
       }
     }
   }
 
   async function handleClearAll() {
-    const deletePromises = todos.map((todo) => {
-      return fetch(`${API_URL}/todos/${todo.id}`, {
+    try {
+      const deletePromises = todos.map((todo) => {
+        return fetch(`${API_URL}/todos/${todo.id}`, {
+          method: "DELETE",
+          headers: {
+            accept: "application/json",
+            "Content-type": "application/json",
+          },
+        }).catch((error) => {
+          console.error(`Error eliminando tarea con id ${todo.id}:`, error);
+        });
+      });
+      await Promise.all(deletePromises);
+      setTodos([]);
+      getTasks();
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  async function deleteTaksTodo(id) {
+    try {
+      const response = await fetch(`${API_URL}/todos/${id}`, {
         method: "DELETE",
         headers: {
           accept: "application/json",
           "Content-type": "application/json",
         },
-      }).catch((error) => {
-        console.error(`Error eliminando tarea con id ${todo.id}:`, error);
       });
-    });
-    await Promise.all(deletePromises);
-    setTodos([]);
-    getTasks();
-  }
-
-  async function deleteTaksTodo(id) {
-    const response = await fetch(`${API_URL}/todos/${id}`, {
-      method: "DELETE",
-      headers: {
-        accept: "application/json",
-        "Content-type": "application/json",
-      },
-    }).catch((error) => {
+      if (response && response.ok) {
+        setTodos(todos.filter((t) => t.id !== id));
+        getTasks();
+      }
+    } catch (error) {
       console.error("Error realizando la petición:", error);
-    });
-    if (response && response.ok) {
-      setTodos(todos.filter((t) => t.id !== id));
-      getTasks();
     }
   }
 
