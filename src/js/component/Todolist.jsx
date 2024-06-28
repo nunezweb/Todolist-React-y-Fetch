@@ -8,18 +8,7 @@ const ToDoList = () => {
   const USER_TODO = "nunezweb";
 
   useEffect(() => {
-    (async () => {
-      try {
-        const response = await fetch(`${API_URL}/users/${USER_TODO}`);
-        if (response.status === 404) {
-          console.log("Usuario no existe, procedemos a crearlo");
-          await createUser();
-        }
-        await getTasks();
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    })();
+    getTasks();
   }, []);
 
   async function createUser() {
@@ -34,22 +23,26 @@ const ToDoList = () => {
           name: USER_TODO,
         }),
       });
-      if (response.status !== 201) {
-        console.error("Error:", response.status, response.statusText);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
+      if (response.status !== 201) {}
+    } catch (error) {}
   }
 
   async function getTasks() {
     try {
       const response = await fetch(`${API_URL}/users/${USER_TODO}`);
-      const data = await response.json();
-      setTodos(data.todos);
-    } catch (error) {
-      console.error("Error:", error);
-    }
+      if (response.status === 404) {
+        await createUser();
+        const retryResponse = await fetch(`${API_URL}/users/${USER_TODO}`);
+        if (!retryResponse.ok) {
+          throw new Error('Error al obtener las tareas después de crear el usuario');
+        }
+        const retryData = await retryResponse.json();
+        setTodos(retryData.todos);
+      } else {
+        const data = await response.json();
+        setTodos(data.todos);
+      }
+    } catch (error) {}
   }
 
   async function addTodo(e) {
@@ -71,9 +64,7 @@ const ToDoList = () => {
           setInputValue("");
           getTasks();
         }
-      } catch (error) {
-        console.error("Error:", error);
-      }
+      } catch (error) {}
     }
   }
 
@@ -86,16 +77,12 @@ const ToDoList = () => {
             accept: "application/json",
             "Content-type": "application/json",
           },
-        }).catch((error) => {
-          console.error(`Error eliminando tarea con id ${todo.id}:`, error);
-        });
+        }).catch((error) => {});
       });
       await Promise.all(deletePromises);
       setTodos([]);
       getTasks();
-    } catch (error) {
-      console.error("Error:", error);
-    }
+    } catch (error) {}
   }
 
   async function deleteTaksTodo(id) {
@@ -108,13 +95,12 @@ const ToDoList = () => {
         },
       });
       if (response && response.ok) {
-        setTodos(todos.filter((t) => t.id !== id));
+        setTodos((prevTodos) => prevTodos.filter((t) => t.id !== id));
         getTasks();
       }
-    } catch (error) {
-      console.error("Error realizando la petición:", error);
-    }
+    } catch (error) {}
   }
+  
 
   return (
     <div className="container todo-container">
